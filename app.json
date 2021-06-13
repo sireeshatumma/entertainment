@@ -7,13 +7,14 @@
       "android",
       "web"
     ],
-    "version": "1.0.0",
+    "version": "1.1.0",
     "orientation": "portrait",
-    "icon": "./assets/videoIcon.png",
+    "icon": "./assets/ksLogo.png",
     "splash": {
-      "image": "./assets/video.png",
+      "image": "./assets/ks2.png",
       "resizeMode": "contain",
-      "backgroundColor": "#6fc0b8"
+      "backgroundColor": "#000000"
+      
     },
     "updates": {
       "fallbackToCacheTimeout": 0
@@ -25,7 +26,7 @@
       "supportsTablet": true
     },
      "android": {
-      "package": "com.KrishApp.VideoApp",
+      "package": "com.KrishApp.entertainment",
       "versionCode": 1
     }
   }

@@ -12,6 +12,7 @@ import firebase from "firebase";
 import db from "../config";
 import MyHeader from "../components/MyHeader";
 import PlayVideo from './PlayVideo'
+import MediaPlay from '../components/MediaPlay'
 
 export default class MainScreen extends Component {
   constructor() {
@@ -25,7 +26,8 @@ export default class MainScreen extends Component {
 
   getVideoLinksList = () => {
     this.requestRef = db
-      .collection("uploaded_video_links")
+      // .collection("uploaded_video_links")
+      .collection("video_names")
       .onSnapshot((snapshot) => {
         var videoLinksList = snapshot.docs.map((doc) => doc.data());
         this.setState({
@@ -49,7 +51,9 @@ export default class MainScreen extends Component {
       <ListItem
         key={i}
         //linkId
-        title={<PlayVideo linkId={item} />}
+        // MediaPlay
+        title={<MediaPlay linkId={item} />}
+        // title={<PlayVideo linkId={item} />}
         // subtitle={item.description}
         titleStyle={{ color: "black", fontWeight: "bold" }}
         bottomDivider

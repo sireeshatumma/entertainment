@@ -8,9 +8,7 @@ import {
   Platform,
 } from "react-native";
 import { DrawerItems } from "react-navigation-drawer";
-import { Avatar } from "react-native-elements";
-import * as ImagePicker from "expo-image-picker";
-import * as Permissions from "expo-permissions";
+
 import firebase from "firebase";
 import db from "../config";
 import { Icon } from "react-native-elements";
@@ -25,49 +23,49 @@ export default class CustomSideBarMenu extends Component {
     docId: "",
   };
 
-  selectPicture = async () => {
-    const { cancelled, uri } = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.All,
-      allowsEditing: true,
-      aspect: [4, 3],
-      quality: 1,
-    });
+  // selectPicture = async () => {
+  //   const { cancelled, uri } = await ImagePicker.launchImageLibraryAsync({
+  //     mediaTypes: ImagePicker.MediaTypeOptions.All,
+  //     allowsEditing: true,
+  //     aspect: [4, 3],
+  //     quality: 1,
+  //   });
 
-    if (!cancelled) {
-      this.uploadImage(uri, this.state.userId);
-    }
-  };
+  //   if (!cancelled) {
+  //     this.uploadImage(uri, this.state.userId);
+  //   }
+  // };
 
-  uploadImage = async (uri, imageName) => {
-    var response = await fetch(uri);
-    var blob = await response.blob();
+  // uploadImage = async (uri, imageName) => {
+  //   var response = await fetch(uri);
+  //   var blob = await response.blob();
 
-    var ref = firebase
-      .storage()
-      .ref()
-      .child("user_profiles/" + imageName);
+  //   var ref = firebase
+  //     .storage()
+  //     .ref()
+  //     .child("user_profiles/" + imageName);
 
-    return ref.put(blob).then((response) => {
-      this.fetchImage(imageName);
-    });
-  };
+  //   return ref.put(blob).then((response) => {
+  //     this.fetchImage(imageName);
+  //   });
+  // };
 
-  fetchImage = (imageName) => {
-    var storageRef = firebase
-      .storage()
-      .ref()
-      .child("user_profiles/" + imageName);
+  // fetchImage = (imageName) => {
+  //   var storageRef = firebase
+  //     .storage()
+  //     .ref()
+  //     .child("user_profiles/" + imageName);
 
-    // Get the download URL
-    storageRef
-      .getDownloadURL()
-      .then((url) => {
-        this.setState({ image: url });
-      })
-      .catch((error) => {
-        this.setState({ image: "#" });
-      });
-  };
+  //   // Get the download URL
+  //   storageRef
+  //     .getDownloadURL()
+  //     .then((url) => {
+  //       this.setState({ image: url });
+  //     })
+  //     .catch((error) => {
+  //       this.setState({ image: "#" });
+  //     });
+  // };
 
   getUserProfile() {
     db.collection("users")
@@ -84,42 +82,14 @@ export default class CustomSideBarMenu extends Component {
   }
 
   componentDidMount() {
-    this.fetchImage(this.state.userId);
+    // this.fetchImage(this.state.userId);
     this.getUserProfile();
   }
 
   render() {
     return (
-      <View style={{ flex: 1 }}>
-        <View
-          style={{
-            flex: 0.3,
-            justifyContent: "center",
-            alignItems: "center",
-            backgroundColor: "#32867d",
-          }}
-        >
-          <Avatar
-            rounded
-            source={{
-              uri: this.state.image,
-            }}
-            size={"xlarge"}
-            onPress={() => this.selectPicture()}
-            showEditButton
-          />
-
-          <Text
-            style={{
-              fontWeight: "300",
-              fontSize: RFValue(20),
-              color: "#fff",
-              padding: RFValue(10),
-            }}
-          >
-            {this.state.name}
-          </Text>
-        </View>
+      <View style={{ flex: 1, marginTop:50}}>
+        
         <View style={{ flex: 0.6 }}>
           <DrawerItems {...this.props} />
         </View>

@@ -89,7 +89,7 @@ export default class WelcomeScreen extends Component {
         <ScrollView style={styles.scrollview}>
         <View style={styles.santaView}>
             <Image
-              source={require("../assets/circle-ring-logo.png")}
+              source={require("../assets/ks.png")}
               style={styles.santaImage}
             />
           </View>
@@ -218,7 +218,7 @@ export default class WelcomeScreen extends Component {
           <View style={{ flex: 0.15 }} />
           <View style={styles.santaView}>
             <Image
-              source={require("../assets/circle-ring-logo.png")}
+              source={require("../assets/ks.png")}
               style={styles.santaImage}
             />
           </View>

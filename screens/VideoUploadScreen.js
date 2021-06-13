@@ -8,7 +8,7 @@ import {
   Alert,
   TouchableOpacity,
   ImageBackground,
-  Platform,Linking
+  Platform,Linking,ActivityIndicator
 } from "react-native";
 import { ListItem } from "react-native-elements";
 import { WebView } from 'react-native-webview';
@@ -29,31 +29,13 @@ constructor(){
     videoName:"",
     description:"",
     uri:"#",
-    videoLinksList:[]
+    videoLinksList:[],
+    uploading:false,
+    uploadTaskSnapshot:{}
   }
   this.requestRef = null;
 }
 
-getVideoLinksList = () => {
-  console.log("getVideoLinksList")
-  this.requestRef = db
-    .collection("videoNamesUploaded")
-    .onSnapshot((snapshot) => {
-      var videoLinksList = snapshot.docs.map((doc) => doc.data());
-      this.setState({
-        videoLinksList: videoLinksList,
-      });
-    });
-    
-};
-
-componentDidMount() {
-  this.getVideoLinksList();
-}
-
-componentWillUnmount() {
-// this.requestRef();
-}
 
 selectPicture = async () => {
     const { cancelled, uri } =  await ImagePicker.launchImageLibraryAsync({
@@ -64,6 +46,7 @@ selectPicture = async () => {
     });
 
     if (!cancelled) {
+      this.setState({uploading:true})
         console.log("not cancelled")
         var randomRequestId = this.createUniqueId()
         this.uploadImage(uri, randomRequestId);
@@ -103,28 +86,26 @@ selectPicture = async () => {
         this.setState({ uri: url });
         console.log("url: "+imageName)
         // setImageUrl(url)
-        this.writeToDB(imageName)
+        // this.writeToDB(url)
       })
       .catch((error) => {
-        // this.setState({ image: "#" });
+        this.setState({ uri: "#" });
       });
+      this.setState({uploading:false})
       return Alert.alert("video link uploaded Successfully")
   };
-  writeToDB=(videoLink)=>{
-    console.log("writing to db")
-    db.collection("videoNamesUploaded").add({"video_link":videoLink})
-    console.log("writing to db done")
-    this.getVideoLinksList();
-    console.log("this.state.videoLinksList: "+this.state.videoLinksList)
-  }
+ 
   addRequest =(videoName,description)=>{
     var userId = this.state.userId
     var randomRequestId = this.createUniqueId()
-    db.collection('uploaded_video_links').add({
+    // db.collection('uploaded_video_links').add({
+      db.collection('video_names').add({
         "user_id": userId,
         "video_link":videoName,
         "description":description,
         "request_id"  : randomRequestId,
+        "likes" :0,
+        "disLikes":0
     })
 
     this.setState({
@@ -135,33 +116,16 @@ selectPicture = async () => {
     return Alert.alert("video link submitted Successfully")
   }
   
-  keyExtractor = (item, index) => index.toString();
-
-  renderItem = ({ item, i }) => {
-    console.log(item)
-    return (
-      <ListItem
-        key={i}
-        //linkId
-        title={item.video_link}
-        // subtitle={item.description}
-        titleStyle={{ color: "black", fontWeight: "bold" }}
-        bottomDivider
-      />
-    );
-  };
-  
+    
  render(){
   return(
     <View style={styles.screen}>
    <MyHeader title="Upload Video" navigation ={this.props.navigation}/>
 
-  <View>
-  <TextInput
+  <View style={{ flex: 1,}}>
+        <TextInput
                 // style ={[styles.formTextInput,{height:300}]}
-                style ={styles.formTextInput}
-                multiline
-                numberOfLines ={8}
+                style ={styles.formTextInput}                
                 placeholder={"About video"}
                 onChangeText ={(text)=>{
                     this.setState({
@@ -185,25 +149,20 @@ selectPicture = async () => {
               </TouchableOpacity>
     
   </View>
-  <View style={{ flex: 1 }}>
-      {this.state.videoLinksList.length === 0 ? (
-        <View style={styles.subContainer}>
-          <Text style={{ fontSize: 20 }}>List Of All Videos</Text>
-        </View>
-      ) : (
-        <View style={styles.subContainer}>
-        <Text>{this.state.videoLinksList.length}</Text>
-        <FlatList
-              keyExtractor={this.keyExtractor}
-              data={this.state.videoLinksList}
-              renderItem={this.renderItem}
-            />
-            </View>
-      )}
-    </View>
-    <View>
-    <WebView source={{ uri: this.state.uri }} />
-    </View>
+
+  <View>
+  {this.state.uploading && (
+  <View style={styles.uploading}>
+    <ActivityIndicator size={60} color="#47477b"></ActivityIndicator>
+    <Text style={styles.statusText}>Uploading</Text>
+    <Text style={styles.statusText}>
+
+      {/* {`${((uploadTaskSnapshot.bytesTransferred / uploadTaskSnapshot.totalBytes) * 100).toFixed(2)}% / 100%`} */}
+    </Text>
+  </View>
+)}
+  </View>
+  
 </View>
 )
  }
@@ -214,21 +173,22 @@ const styles = StyleSheet.create({
     screen: {
       flex: 1,
       alignItems: 'center',
+      // border:"solid"
     },
     title: {
       fontSize: 35,
       marginVertical: 40,
     },
     formTextInput:{
-      width:"105%",
-      // width: this.state.testWidth,
-      height:200,
+      width:"100%",
+      height:40,
       alignSelf:'center',
       borderColor:'#ffab91',
       borderRadius:10,
       borderWidth:1,
-      marginTop:20,
-      padding:10,
+      marginTop:100,
+      marginBottom:50,
+      padding:5,
     },
     button: {
       backgroundColor: '#47477b',
@@ -248,6 +208,22 @@ const styles = StyleSheet.create({
       bottom: 0,
       marginBottom: 50,
       width: 300,
+    },
+    center: {
+      flex: 1,
+      width: '100%',
+      justifyContent: 'center',
+      alignItems: 'center',
+      paddingHorizontal: 50,
+    },
+    uploading: {
+      marginTop: 80,
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    statusText: {
+      marginTop: 20,
+      fontSize: 20,
     },
   });
 // export default VideoUploadScreen;

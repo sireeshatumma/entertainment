@@ -9,16 +9,25 @@ import {
   TouchableOpacity,
   Alert,
 } from "react-native";
-import { Card } from "react-native-elements";
+import { Card,Avatar,Icon } from "react-native-elements";
 import MyHeader from "../components/MyHeader";
 import db from "../config";
 import firebase from "firebase";
 import { RFValue } from "react-native-responsive-fontsize";
+import { DrawerItems } from "react-navigation-drawer";
+import * as ImagePicker from "expo-image-picker";
+import * as Permissions from "expo-permissions";
+
+
 
 export default class SettingScreen extends Component {
   constructor() {
     super();
     this.state = {
+      userId: firebase.auth().currentUser.email,
+      image: "#",
+      name: "",
+      // docId: "",
       emailId: "",
       firstName: "",
       lastName: "",
@@ -27,7 +36,49 @@ export default class SettingScreen extends Component {
       docId: "",
     };
   }
+  selectPicture = async () => {
+    const { cancelled, uri } = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.All,
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 1,
+    });
 
+    if (!cancelled) {
+      this.uploadImage(uri, this.state.userId);
+    }
+  };
+
+  uploadImage = async (uri, imageName) => {
+    var response = await fetch(uri);
+    var blob = await response.blob();
+
+    var ref = firebase
+      .storage()
+      .ref()
+      .child("user_profiles/" + imageName);
+
+    return ref.put(blob).then((response) => {
+      this.fetchImage(imageName);
+    });
+  };
+
+  fetchImage = (imageName) => {
+    var storageRef = firebase
+      .storage()
+      .ref()
+      .child("user_profiles/" + imageName);
+
+    // Get the download URL
+    storageRef
+      .getDownloadURL()
+      .then((url) => {
+        this.setState({ image: url });
+      })
+      .catch((error) => {
+        this.setState({ image: "#" });
+      });
+  };
   getUserDetails = () => {
     var email = firebase.auth().currentUser.email;
     db.collection("users")
@@ -43,6 +94,9 @@ export default class SettingScreen extends Component {
             address: data.address,
             contact: data.contact,
             docId: doc.id,
+            name: data.first_name + " " + data.last_name,
+            // docId: doc.id,
+            image: data.image,
           });
         });
       });
@@ -61,6 +115,7 @@ export default class SettingScreen extends Component {
 
   componentDidMount() {
     this.getUserDetails();
+    this.fetchImage(this.state.userId);
   }
 
   render() {
@@ -70,12 +125,40 @@ export default class SettingScreen extends Component {
           <MyHeader title="Settings" navigation={this.props.navigation} />
         </View>
 
+        <View
+          style={{
+            flex: 0.3,
+            justifyContent: "center",
+            alignItems: "center",
+            backgroundColor: "#32867d",
+          }}
+        >
+          <Avatar
+            rounded
+            source={{
+              uri: this.state.image,
+            }}
+            size={"xlarge"}
+            onPress={() => this.selectPicture()}
+            showEditButton
+          />
 
+          <Text
+            style={{
+              fontWeight: "300",
+              fontSize: RFValue(20),
+              color: "#fff",
+              padding: RFValue(10),
+            }}
+          >
+            {this.state.name}
+          </Text>
+        </View>
         <View style={styles.formContainer}>
             <View
               style={{
                 flex: 0.66,
-                padding: RFValue(10),
+                padding: RFValue(50),
               }}
             >
             <Text style={styles.label}>First Name </Text>
@@ -162,22 +245,22 @@ const styles = StyleSheet.create({
     fontSize:RFValue(18),
     color:"#717D7E",
     fontWeight:'bold',
-    padding:RFValue(10),
+    padding:RFValue(5),
     marginLeft:RFValue(20)
   },
   formTextInput: {
     width: "90%",
-    height: RFValue(50),
+    height: RFValue(30),
     padding: RFValue(10),
     borderWidth:1,
     borderRadius:2,
     borderColor:"grey",
-    marginBottom:RFValue(20),
+    marginBottom:RFValue(10),
     marginLeft:RFValue(20)
   },
   button: {
     width: "75%",
-    height: RFValue(60),
+    height: RFValue(50),
     justifyContent: "center",
     alignItems: "center",
     borderRadius: RFValue(50),
@@ -195,10 +278,10 @@ const styles = StyleSheet.create({
   buttonView:{
     flex: 0.22,
     alignItems: "center",
-    marginTop:RFValue(100)
+    marginTop:RFValue(10)
 },
   buttonText: {
-    fontSize: RFValue(23),
+    fontSize: RFValue(10),
     fontWeight: "bold",
     color: "#fff",
   },
